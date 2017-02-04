@@ -5,18 +5,18 @@ const strip = document.querySelector('.strip');
 const snap = document.querySelector('.snap');
 
 function getVideo() {
-	navigator.mediaDevices.getUserMedia({video: true, audio: false})
+	navigator.mediaDevices.getUserMedia({ video: true, audio: false })
 		.then(localMediaStream => {
 			console.log(localMediaStream);
 			video.src = window.URL.createObjectURL(localMediaStream);
 			video.play();
 		})
 		.catch(err => {
-			console.error('Webcam is not enabled', err);
-		})
+			console.error(`OH NO!!!`, err);
+		});
 }
 
-function paintToCanvas() {
+function paintToCanavas() {
 	const width = video.videoWidth;
 	const height = video.videoHeight;
 	canvas.width = width;
@@ -28,10 +28,11 @@ function paintToCanvas() {
 		let pixels = ctx.getImageData(0, 0, width, height);
 		// mess with them
 		// pixels = redEffect(pixels);
-		// pixels = rgbSplit(pixels);
-		// ctx.globalAlpha = 0.1;
-		
-		pixels = greenScreen(pixels);	
+
+		pixels = rgbSplit(pixels);
+		// ctx.globalAlpha = 0.8;
+
+		// pixels = greenScreen(pixels);
 		// put them back
 		ctx.putImageData(pixels, 0, 0);
 	}, 16);
@@ -46,26 +47,25 @@ function takePhoto() {
 	const data = canvas.toDataURL('image/jpeg');
 	const link = document.createElement('a');
 	link.href = data;
-	link.setAttribute('download', 'webcam-image');
-	link.innerHTML = `<img src="${data}" alt="webcam image" />`
-	link.textContent = 'Download Image';
-	strip.insertBefore(link, strip.firstChild);
+	link.setAttribute('download', 'portrait');
+	link.innerHTML = `<img src="${data}" alt="portrait photo" />`;
+	strip.insertBefore(link, strip.firsChild);
 }
 
 function redEffect(pixels) {
 	for(let i = 0; i < pixels.data.length; i+=4) {
-		pixels.data[i + 0] = pixels.data[i + 0] + 100;  // r
-		pixels.data[i + 1] = pixels.data [i + 1] - 50  // g
-		pixels.data[i + 2] = pixels.data[i + 2] * 0.5  // b
+		pixels.data[i + 0] = pixels.data[i + 0] + 200; // RED
+		pixels.data[i + 1] = pixels.data[i + 1] - 50; // GREEN
+		pixels.data[i + 2] = pixels.data[i + 2] * 0.5; // Blue
 	}
 	return pixels;
 }
 
 function rgbSplit(pixels) {
 	for(let i = 0; i < pixels.data.length; i+=4) {
-		pixels.data[i - 150] = pixels.data[i + 0] + 100;  // r
-		pixels.data[i + 100] = pixels.data [i + 1] - 50  // g
-		pixels.data[i - 550] = pixels.data[i + 2] * 0.5  // b
+		pixels.data[i - 150] = pixels.data[i + 0]; // RED
+		pixels.data[i + 500] = pixels.data[i + 1]; // GREEN
+		pixels.data[i - 550] = pixels.data[i + 2]; // Blue
 	}
 	return pixels;
 }
@@ -89,14 +89,13 @@ function greenScreen(pixels) {
 			&& red <= levels.rmax
 			&& green <= levels.gmax
 			&& blue <= levels.bmax) {
-				// take it out!
-				pixels.data[i + 3] = 0;
-			}
+			// take it out!
+			pixels.data[i + 3] = 0;
+		}
 	}
-
 	return pixels;
 }
 
 getVideo();
 
-video.addEventListener('canplay', paintToCanvas)
+video.addEventListener('canplay', paintToCanavas);
